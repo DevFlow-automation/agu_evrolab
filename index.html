@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EUROLAB — Поиск услуг и цен (02.09.2026)</title>
+  <title>Evrolab - Moviy nur (02.09.2026)</title>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,6 +18,45 @@
       padding: 0 2px;
       border-radius: 3px;
     }
+    @page {
+      size: landscape;
+      margin: 0;
+    }
+    @media print {
+      html, body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      body > *:not(#receiptModal) {
+        display: none !important;
+      }
+      #receiptModal {
+        position: static !important;
+        inset: auto !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+      }
+      #receiptDialog {
+        box-shadow: none !important;
+        border: none !important;
+        border-right: 1.5px dashed #475569 !important;
+        border-radius: 0 !important;
+        max-width: 92mm !important;
+        width: 92mm !important;
+        min-height: 195mm !important;
+        margin: 0 !important;
+        padding: 10mm 8mm 10mm 10mm !important;
+        max-height: none !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen">
@@ -26,7 +65,7 @@
     <div class="max-w-3xl mx-auto px-4 py-3 sm:py-4">
       <div class="flex items-center justify-between gap-2 mb-3">
         <div>
-          <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">EUROLAB — Прайс-лист</h1>
+          <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Evrolab - Moviy nur</h1>
           <p class="text-xs text-slate-500">Актуально на 02.09.2026 • Цвет пробирки ориентировочный (ISO 6710)</p>
         </div>
         <span id="counter" class="text-xs sm:text-sm font-medium text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full whitespace-nowrap">
@@ -71,7 +110,7 @@
   </header>
 
   <!-- Main List -->
-  <main class="max-w-3xl mx-auto px-4 py-4 pb-16">
+  <main class="max-w-3xl mx-auto px-4 py-4 pb-28">
     <div id="resultsList" class="space-y-2"></div>
 
     <div id="emptyState" class="hidden text-center py-16 px-4">
@@ -86,6 +125,112 @@
       </button>
     </div>
   </main>
+
+
+  <!-- Floating Cart / Receipt Bar -->
+  <div
+    id="cartBar"
+    class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-3xl bg-slate-900 text-white rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between gap-3"
+  >
+    <div class="min-w-0">
+      <div class="text-xs text-slate-300">Выбрано услуг: <span id="cartCount" class="font-semibold text-white">0</span></div>
+      <div class="text-base sm:text-lg font-bold text-teal-400 truncate">Итого: <span id="cartTotal">0 сум</span></div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button
+        id="clearCartBtn"
+        type="button"
+        class="px-3 py-2 text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl transition"
+      >
+        Очистить
+      </button>
+      <button
+        id="openReceiptBtn"
+        type="button"
+        class="px-4 py-2 text-xs sm:text-sm font-semibold bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl transition flex items-center gap-1.5"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+        </svg>
+        Чек / Печать
+      </button>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div
+    id="receiptModal"
+    class="hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+  >
+    <div
+      id="receiptDialog"
+      class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto p-5 sm:p-6"
+    >
+      <div class="flex items-center justify-between mb-4 no-print">
+        <span class="text-sm font-semibold text-slate-500">Предпросмотр чека</span>
+        <button
+          id="closeReceiptBtn"
+          type="button"
+          aria-label="Закрыть чек"
+          class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Printable Receipt Body -->
+      <div class="font-mono text-slate-900 text-xs sm:text-sm">
+        <div class="text-center border-b-2 border-dashed border-slate-300 pb-3 mb-3">
+          <div class="text-lg font-bold tracking-wider">Evrolab - Moviy nur</div>
+          <div class="text-xs text-slate-500">СЧЁТ НА ЛАБОРАТОРНЫЕ УСЛУГИ</div>
+          <div id="receiptDate" class="text-xs text-slate-500 mt-1"></div>
+        </div>
+
+        <div class="mb-3 no-print">
+          <input
+            id="patientInput"
+            type="text"
+            placeholder="ФИО пациента (необязательно)"
+            class="w-full px-3 py-2 text-xs font-sans bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-teal-500"
+          />
+        </div>
+        <div id="receiptPatientLine" class="hidden text-xs mb-2 pb-2 border-b border-dashed border-slate-200"></div>
+
+        <div id="receiptItems" class="space-y-2 border-b-2 border-dashed border-slate-300 pb-3 mb-3"></div>
+
+        <div class="flex items-baseline justify-between text-base font-bold pt-1">
+          <span>ИТОГО:</span>
+          <span id="receiptTotal">0 сум</span>
+        </div>
+
+        <div class="text-center text-[11px] text-slate-400 mt-4 pt-3 border-t border-dashed border-slate-200">
+          Прайс-лист от 02.09.2026 • Спасибо за обращение!
+        </div>
+      </div>
+
+      <div class="flex gap-2 mt-5 no-print">
+        <button
+          id="printReceiptBtn"
+          type="button"
+          class="flex-1 py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold text-sm rounded-xl transition flex items-center justify-center gap-2"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          Печать чека
+        </button>
+        <button
+          id="closeReceiptBtn2"
+          type="button"
+          class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm rounded-xl transition"
+        >
+          Закрыть
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Toast -->
   <div
@@ -108,7 +253,23 @@
     const counter = document.getElementById('counter');
     const toast = document.getElementById('toast');
 
+    const cartBar = document.getElementById('cartBar');
+    const cartCount = document.getElementById('cartCount');
+    const cartTotal = document.getElementById('cartTotal');
+    const clearCartBtn = document.getElementById('clearCartBtn');
+    const openReceiptBtn = document.getElementById('openReceiptBtn');
+    const receiptModal = document.getElementById('receiptModal');
+    const closeReceiptBtn = document.getElementById('closeReceiptBtn');
+    const closeReceiptBtn2 = document.getElementById('closeReceiptBtn2');
+    const printReceiptBtn = document.getElementById('printReceiptBtn');
+    const receiptDate = document.getElementById('receiptDate');
+    const receiptItems = document.getElementById('receiptItems');
+    const receiptTotal = document.getElementById('receiptTotal');
+    const patientInput = document.getElementById('patientInput');
+    const receiptPatientLine = document.getElementById('receiptPatientLine');
+
     let toastTimer = null;
+    const selectedItems = new Map(); // id -> qty
 
     // Populate category dropdown
     CATEGORIES.forEach(cat => {
@@ -185,6 +346,87 @@
       }
 
       return T.yellow;
+    }
+
+    function getNumericPrice(raw) {
+      const match = String(raw).trim().match(/(\d+)$/);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function updateCartBar() {
+      let totalCount = 0;
+      let totalSum = 0;
+      selectedItems.forEach((qty, id) => {
+        const svc = SERVICES.find(s => s.id === id);
+        if (svc) {
+          totalCount += qty;
+          totalSum += getNumericPrice(svc.price) * qty;
+        }
+      });
+
+      cartCount.textContent = totalCount;
+      cartTotal.textContent = totalSum.toLocaleString('ru-RU') + ' сум';
+      cartBar.classList.toggle('hidden', totalCount === 0);
+    }
+
+    function toggleService(id) {
+      if (selectedItems.has(id)) {
+        selectedItems.delete(id);
+      } else {
+        selectedItems.set(id, 1);
+      }
+      updateCartBar();
+      render();
+    }
+
+    function renderReceipt() {
+      receiptDate.textContent = new Date().toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const pName = patientInput.value.trim();
+      if (pName) {
+        receiptPatientLine.textContent = 'Пациент: ' + pName;
+        receiptPatientLine.classList.remove('hidden');
+      } else {
+        receiptPatientLine.classList.add('hidden');
+      }
+
+      receiptItems.innerHTML = '';
+      let totalSum = 0;
+      let idx = 1;
+
+      selectedItems.forEach((qty, id) => {
+        const svc = SERVICES.find(s => s.id === id);
+        if (!svc) return;
+        const unitPrice = getNumericPrice(svc.price);
+        const lineSum = unitPrice * qty;
+        totalSum += lineSum;
+
+        const row = document.createElement('div');
+        row.className = 'flex items-start justify-between gap-2';
+        row.innerHTML = `
+          <div class="min-w-0 flex-1">
+            <div class="leading-snug">${idx}. ${escapeHtml(svc.name)}</div>
+            <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5">
+              <span>${unitPrice.toLocaleString('ru-RU')} × ${qty}</span>
+              <span class="no-print inline-flex items-center gap-1 ml-1">
+                <button type="button" data-action="dec" data-id="${svc.id}" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold leading-none">-</button>
+                <button type="button" data-action="inc" data-id="${svc.id}" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold leading-none">+</button>
+              </span>
+            </div>
+          </div>
+          <div class="font-semibold whitespace-nowrap shrink-0">${lineSum.toLocaleString('ru-RU')} сум</div>
+        `;
+        receiptItems.appendChild(row);
+        idx++;
+      });
+
+      receiptTotal.textContent = totalSum.toLocaleString('ru-RU') + ' сум';
     }
 
     function formatPrice(raw) {
@@ -304,6 +546,11 @@
 
         const priceFormatted = formatPrice(item.price);
         const tube = getTubeInfo(item);
+        const isSelected = selectedItems.has(item.id);
+
+        if (isSelected) {
+          card.classList.add('ring-2', 'ring-teal-500', 'border-teal-400', 'bg-teal-50/30');
+        }
 
         card.innerHTML = `
           <div class="min-w-0 flex-1">
@@ -316,14 +563,32 @@
               <span class="text-xs text-slate-400 truncate">${escapeHtml(item.category)}</span>
             </div>
           </div>
-          <div class="text-right shrink-0">
+          <div class="flex items-center gap-2 shrink-0">
             <span class="inline-block text-sm sm:text-base font-bold text-teal-700 bg-teal-50 border border-teal-100 px-3 py-1 rounded-lg whitespace-nowrap">
               ${escapeHtml(priceFormatted)}
             </span>
+            <button
+              type="button"
+              data-toggle-id="${item.id}"
+              aria-label="${isSelected ? 'Убрать из чека' : 'Добавить в чек'}"
+              class="w-9 h-9 rounded-xl border font-bold text-base flex items-center justify-center transition ${
+                isSelected
+                  ? 'bg-teal-600 border-teal-600 text-white hover:bg-teal-700'
+                  : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-teal-50 hover:border-teal-300 hover:text-teal-700'
+              }"
+            >
+              ${isSelected ? '✓' : '+'}
+            </button>
           </div>
         `;
 
-        card.addEventListener('click', () => {
+        card.addEventListener('click', e => {
+          const btn = e.target.closest('[data-toggle-id]');
+          if (btn) {
+            e.stopPropagation();
+            toggleService(item.id);
+            return;
+          }
           copyText(`${item.name} — ${priceFormatted}`);
         });
 
@@ -357,6 +622,67 @@
       }
     });
 
+    clearCartBtn.addEventListener('click', () => {
+      selectedItems.clear();
+      updateCartBar();
+      render();
+    });
+
+    openReceiptBtn.addEventListener('click', () => {
+      renderReceipt();
+      receiptModal.classList.remove('hidden');
+    });
+
+    function closeReceipt() {
+      receiptModal.classList.add('hidden');
+    }
+
+    closeReceiptBtn.addEventListener('click', closeReceipt);
+    closeReceiptBtn2.addEventListener('click', closeReceipt);
+
+    receiptModal.addEventListener('click', e => {
+      if (e.target === receiptModal) closeReceipt();
+    });
+
+    patientInput.addEventListener('input', () => {
+      const pName = patientInput.value.trim();
+      if (pName) {
+        receiptPatientLine.textContent = 'Пациент: ' + pName;
+        receiptPatientLine.classList.remove('hidden');
+      } else {
+        receiptPatientLine.classList.add('hidden');
+      }
+    });
+
+    receiptItems.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const id = Number(btn.dataset.id);
+      const action = btn.dataset.action;
+      const current = selectedItems.get(id) || 0;
+      if (action === 'inc') {
+        selectedItems.set(id, current + 1);
+      } else if (action === 'dec') {
+        if (current <= 1) {
+          selectedItems.delete(id);
+        } else {
+          selectedItems.set(id, current - 1);
+        }
+      }
+      updateCartBar();
+      render();
+      if (selectedItems.size === 0) {
+        closeReceipt();
+      } else {
+        renderReceipt();
+      }
+    });
+
+    printReceiptBtn.addEventListener('click', () => {
+      window.print();
+    });
+
+    updateCartBar();
     render();
   </script>
 </body>
